@@ -1,0 +1,6 @@
+{
+  "name": "Mind Expanding Books",
+  "description": "Curated collection of mind-expanding books across categories with ratings, sorting, and a personal reading list.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

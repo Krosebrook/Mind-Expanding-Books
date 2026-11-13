@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Mind Expanding Books</string>
+    <string name="reading_list_title">Your reading list</string>
+    <string name="reading_list_back">Go back to the homepage</string>
+    <string name="reading_list_empty_title">Your reading list is empty</string>
+    <string name="reading_list_empty_subtitle">Tap the bookmark icon on any book to save it here for later reading.</string>
+    <string name="sort_by_prefix">Sort By: %1$s</string>
+    <string name="show_more">Show More</string>
+    <string name="show_less">Show Less</string>
+    <string name="load_more">Load More Books</string>
+    <string name="all_books">All Books</string>
+    <string name="search_books_hint">Search by title, author, or category…</string>
+    <string name="open_amazon">Amazon</string>
+    <string name="open_goodreads">Goodreads</string>
+    <string name="bookmark_action">Bookmark</string>
+    <string name="bookmarked_action">Bookmarked</string>
+    <string name="categories_drawer_title">Categories</string>
+    <string name="clear_search">Clear search</string>
+</resources>
