@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.mindexpanding.books.data.BookRepository
 import com.mindexpanding.books.model.AppScreen
 import com.mindexpanding.books.model.Book
-import com.mindexpanding.books.model.Category
+import com.mindexpanding.books.model.BookCategory
+import com.mindexpanding.books.model.CategoryFilterItem
 import com.mindexpanding.books.model.SortOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +18,8 @@ import kotlinx.coroutines.launch
 data class BooksUiState(
     val isLoading: Boolean = true,
     val allBooks: List<Book> = emptyList(),
-    val categories: List<Category> = emptyList(),
-    val selectedCategory: Category? = null,
+    val categoryFilters: List<CategoryFilterItem> = emptyList(),
+    val selectedCategory: BookCategory? = null,
     val sortOption: SortOption = SortOption.RATING_DESC,
     val searchQuery: String = "",
     val bookmarkedKeys: Set<String> = emptySet(),
@@ -30,7 +31,7 @@ data class BooksUiState(
             val categoryFiltered = if (selectedCategory == null) {
                 allBooks
             } else {
-                allBooks.filter { it.category.equals(selectedCategory.name, ignoreCase = true) }
+                allBooks.filter { it.category == selectedCategory }
             }
 
             val query = searchQuery.trim()
@@ -40,7 +41,8 @@ data class BooksUiState(
                 categoryFiltered.filter { book ->
                     book.title.contains(query, ignoreCase = true) ||
                         book.author.contains(query, ignoreCase = true) ||
-                        book.category.contains(query, ignoreCase = true)
+                        book.category.displayName.contains(query, ignoreCase = true) ||
+                        book.subCategory.contains(query, ignoreCase = true)
                 }
             }
 
@@ -85,24 +87,32 @@ class BooksViewModel(
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            val categories = repository.loadCategories()
             val books = repository.loadBooks()
+            val categoryFilters = repository.buildCategoryFilters(
+                books = books,
+                allBooksLabel = ALL_BOOKS_LABEL
+            )
             val bookmarks = repository.getBookmarkedKeys()
             _uiState.update {
                 it.copy(
                     isLoading = false,
                     allBooks = books,
-                    categories = categories,
+                    categoryFilters = categoryFilters,
                     bookmarkedKeys = bookmarks
                 )
             }
         }
     }
 
-    fun selectCategory(category: Category?) {
-        _uiState.update {
-            it.copy(
-                selectedCategory = category,
+    fun selectCategory(category: BookCategory?) {
+        _uiState.update { state ->
+            val nextCategory = if (category != null && state.selectedCategory == category) {
+                null
+            } else {
+                category
+            }
+            state.copy(
+                selectedCategory = nextCategory,
                 currentScreen = AppScreen.Feed,
                 visibleLimit = BooksUiState.PAGE_SIZE
             )
@@ -122,6 +132,16 @@ class BooksViewModel(
         _uiState.update {
             it.copy(
                 searchQuery = query,
+                visibleLimit = BooksUiState.PAGE_SIZE
+            )
+        }
+    }
+
+    fun clearFilters() {
+        _uiState.update {
+            it.copy(
+                selectedCategory = null,
+                searchQuery = "",
                 visibleLimit = BooksUiState.PAGE_SIZE
             )
         }
@@ -164,5 +184,9 @@ class BooksViewModel(
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return BooksViewModel(repository) as T
         }
+    }
+
+    companion object {
+        private const val ALL_BOOKS_LABEL = "All Books"
     }
 }
